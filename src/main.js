@@ -85,7 +85,7 @@ let walletAddress = null;
 async function initTonConnect() {
   try {
     tonConnectUI = new TonConnectUI({
-      manifestUrl: 'https://echoanna.github.io/echoapp/tonconnect-manifest.json',
+      manifestUrl: 'https://echowork27-code.github.io/echoapp/tonconnect-manifest.json',
       buttonRootId: null
     });
     
