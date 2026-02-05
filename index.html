@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <title>EchoApp</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script type="module" crossorigin src="./assets/index-CG4iw9fI.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-BONWG6q0.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <div class="points-badge">
+          <span class="icon">⭐</span>
+          <span id="points-value">0</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+          <span class="icon-sun">☀️</span>
+          <span class="icon-moon">🌙</span>
+        </button>
+        <button id="wallet-btn" class="wallet-btn connect">
+          <span class="ton-icon"></span>
+          <span id="wallet-text">Connect</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+      <!-- Store Page -->
+      <div id="page-store" class="page active">
+        <!-- Promo Banner -->
+        <div class="promo-banner">
+          <div class="promo-title">Welcome to EchoApp</div>
+          <span class="promo-subtitle">TON Aggregator</span>
+        </div>
+
+        <!-- Section Tabs -->
+        <div class="section-tabs">
+          <button class="section-tab active" data-section="all">All items</button>
+          <button class="section-tab" data-section="collections">Collections</button>
+          <button class="section-tab" data-section="bundles">Bundles</button>
+        </div>
+
+        <!-- Search & Filters -->
+        <div class="search-filters">
+          <div class="search-row">
+            <div class="search-input">
+              <span class="search-icon">🔍</span>
+              <input type="text" placeholder="Quick find" id="search-input">
+            </div>
+            <button class="icon-btn" id="btn-trending">📈</button>
+            <button class="icon-btn" id="btn-sort">⬇️</button>
+          </div>
+          <div class="filter-chips">
+            <button class="filter-chip" id="filter-collection">
+              <span>🏷️</span>
+              <span>Collection</span>
+              <span class="chevron">▼</span>
+            </button>
+            <button class="filter-chip" id="filter-price">
+              <span>💎</span>
+              <span>Price</span>
+              <span class="chevron">▼</span>
+            </button>
+            <button class="filter-chip" id="filter-model">
+              <span>✨</span>
+              <span>Model</span>
+              <span class="chevron">▼</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+          <div class="nft-grid" id="nft-grid">
+            <!-- Sample NFT Cards -->
+            <div class="nft-card" data-bg="green">
+              <div class="nft-image-wrapper">
+                <div class="nft-image" style="font-size: 64px;">💐</div>
+              </div>
+              <div class="nft-info">
+                <div class="nft-name">Lush Bouquet</div>
+                <div class="nft-number">#62</div>
+                <div class="nft-actions">
+                  <button class="price-btn">
+                    <span class="ton-icon-white"></span>
+                    <span>25.13</span>
+                  </button>
+                  <button class="cart-btn">🛒</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="nft-card" data-bg="purple">
+              <div class="nft-image-wrapper">
+                <div class="nft-image" style="font-size: 64px;">🎀</div>
+              </div>
+              <div class="nft-info">
+                <div class="nft-name">Jingle Bells</div>
+                <div class="nft-number">#52526</div>
+                <div class="nft-actions">
+                  <button class="price-btn">
+                    <span class="ton-icon-white"></span>
+                    <span>12.15</span>
+                  </button>
+                  <button class="cart-btn">🛒</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="nft-card" data-bg="blue">
+              <div class="nft-image-wrapper">
+                <div class="nft-image" style="font-size: 64px;">🏆</div>
+              </div>
+              <div class="nft-info">
+                <div class="nft-name">Victory Medal</div>
+                <div class="nft-number">#1337</div>
+                <div class="nft-actions">
+                  <button class="price-btn">
+                    <span class="ton-icon-white"></span>
+                    <span>6.00</span>
+                  </button>
+                  <button class="cart-btn">🛒</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="nft-card" data-bg="orange">
+              <div class="nft-image-wrapper">
+                <div class="nft-image" style="font-size: 64px;">🐸</div>
+              </div>
+              <div class="nft-info">
+                <div class="nft-name">Plush Pepe</div>
+                <div class="nft-number">#420</div>
+                <div class="nft-actions">
+                  <button class="price-btn">
+                    <span class="ton-icon-white"></span>
+                    <span>9,150</span>
+                  </button>
+                  <button class="cart-btn">🛒</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- My Gifts Page -->
+      <div id="page-gifts" class="page">
+        <div class="content">
+          <div class="placeholder">
+            <div class="placeholder-icon">🎁</div>
+            <div class="placeholder-text">Connect wallet to see your gifts</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Season Page -->
+      <div id="page-season" class="page">
+        <div class="content">
+          <div class="placeholder">
+            <div class="placeholder-icon">⭐</div>
+            <div class="placeholder-text">Season rewards coming soon</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile Page -->
+      <div id="page-profile" class="page">
+        <div class="content">
+          <div class="placeholder">
+            <div class="placeholder-icon">👤</div>
+            <div class="placeholder-text">Connect wallet to view profile</div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-page="store">
+        <span class="nav-icon">🏪</span>
+        <span class="nav-label">Store</span>
+      </button>
+      <button class="nav-item" data-page="gifts">
+        <span class="nav-icon">🎁</span>
+        <span class="nav-label">My gifts</span>
+      </button>
+      <button class="nav-item" data-page="season">
+        <span class="nav-icon">⭐</span>
+        <span class="nav-label">Season</span>
+      </button>
+      <button class="nav-item" data-page="profile">
+        <img src="" alt="" class="nav-avatar" id="nav-avatar">
+        <span class="nav-label">Profile</span>
+      </button>
+    </nav>
+
+    <!-- Collection Filter Modal -->
+    <div class="modal-overlay" id="modal-overlay"></div>
+    <div class="bottom-sheet" id="collection-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h2 class="sheet-title">Collection</h2>
+        <button class="sheet-close" id="sheet-close">✕</button>
+      </div>
+      <div class="sheet-content">
+        <div class="search-input" style="margin-bottom: 16px;">
+          <span class="search-icon">🔍</span>
+          <input type="text" placeholder="Quick find" id="collection-search">
+        </div>
+        <ul class="collection-list" id="collection-list">
+          <li class="collection-item">
+            <div class="collection-checkbox"></div>
+            <div class="collection-icon">🏆</div>
+            <div class="collection-info">
+              <div class="collection-name">
+                Victory Medal
+                <span class="badge badge-pre">PRE</span>
+              </div>
+              <div class="collection-meta">81.5K 🎁</div>
+            </div>
+            <div class="collection-stats">
+              <div class="collection-price">6 TON</div>
+              <div class="collection-volume">Vol 24h: 434.61</div>
+            </div>
+          </li>
+          <li class="collection-item">
+            <div class="collection-checkbox"></div>
+            <div class="collection-icon">🐦</div>
+            <div class="collection-info">
+              <div class="collection-name">
+                Rare Bird
+                <span class="badge badge-pre">PRE</span>
+                <span class="badge badge-discount">-50%</span>
+              </div>
+              <div class="collection-meta">9.3K 🎁</div>
+            </div>
+            <div class="collection-stats">
+              <div class="collection-price">48 TON</div>
+              <div class="collection-volume">Vol 24h: 1.2K</div>
+            </div>
+          </li>
+          <li class="collection-item">
+            <div class="collection-checkbox"></div>
+            <div class="collection-icon">🐸</div>
+            <div class="collection-info">
+              <div class="collection-name">
+                Plush Pepe
+                <span class="badge badge-zero">0%</span>
+              </div>
+              <div class="collection-meta">2.8K 🎁</div>
+            </div>
+            <div class="collection-stats">
+              <div class="collection-price">9,150 TON</div>
+              <div class="collection-volume">Vol 24h: 10K</div>
+            </div>
+          </li>
+          <li class="collection-item">
+            <div class="collection-checkbox"></div>
+            <div class="collection-icon">💜</div>
+            <div class="collection-info">
+              <div class="collection-name">
+                Heart Locket
+                <span class="badge badge-zero">0%</span>
+              </div>
+              <div class="collection-meta">1.9K 🎁</div>
+            </div>
+            <div class="collection-stats">
+              <div class="collection-price">1,780 TON</div>
+              <div class="collection-volume">Vol 24h: 3.5K</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="sheet-footer">
+        <button class="btn-secondary" id="btn-clear-filter">Clear all</button>
+        <button class="btn-primary" id="btn-apply-filter">Show results</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
