@@ -229,14 +229,15 @@ function renderLoading() {
 
 let allCollections = [];
 let selectedCollections = [];
+let currentGiftCollection = null;
 
 async function loadNfts() {
   const grid = document.getElementById('nft-grid');
   grid.innerHTML = renderLoading();
   
   try {
-    // Get featured NFTs from top collections
-    const nfts = await api.getFeaturedNfts();
+    // Load Telegram Gifts by default
+    const nfts = await api.getAllTelegramGifts(8);
     
     if (nfts.length === 0) {
       grid.innerHTML = `
@@ -262,6 +263,66 @@ async function loadNfts() {
       </div>
     `;
   }
+}
+
+async function loadGiftCollection(collectionAddress) {
+  const grid = document.getElementById('nft-grid');
+  grid.innerHTML = renderLoading();
+  
+  // Update active button state
+  document.querySelectorAll('.gift-collection-btn').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.dataset.collection === collectionAddress) {
+      btn.classList.add('active');
+    }
+  });
+  
+  currentGiftCollection = collectionAddress;
+  
+  try {
+    const nfts = await api.getTelegramGifts(collectionAddress, 20);
+    
+    if (nfts.length === 0) {
+      grid.innerHTML = `
+        <div class="placeholder" style="grid-column: 1/-1;">
+          <div class="placeholder-icon">🔍</div>
+          <div class="placeholder-text">No gifts in this collection</div>
+        </div>
+      `;
+      return;
+    }
+    
+    grid.innerHTML = nfts.map((nft, i) => renderNftCard(nft, i)).join('');
+    initNftCardHandlers();
+    
+  } catch (error) {
+    console.error('Failed to load gift collection:', error);
+    grid.innerHTML = `
+      <div class="placeholder" style="grid-column: 1/-1;">
+        <div class="placeholder-icon">⚠️</div>
+        <div class="placeholder-text">Failed to load</div>
+      </div>
+    `;
+  }
+}
+
+function initGiftCollections() {
+  // Gift collection buttons
+  document.querySelectorAll('.gift-collection-btn[data-collection]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      loadGiftCollection(btn.dataset.collection);
+      haptic('selection');
+    });
+  });
+  
+  // All gifts button
+  document.getElementById('btn-all-gifts')?.addEventListener('click', () => {
+    document.querySelectorAll('.gift-collection-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('btn-all-gifts')?.classList.add('active');
+    currentGiftCollection = null;
+    loadNfts();
+    haptic('selection');
+  });
 }
 
 async function loadCollections() {
@@ -365,7 +426,13 @@ function initNftCardHandlers() {
       haptic('light');
       const address = card.dataset.address;
       if (address && tg) {
-        tg.openLink(`https://getgems.io/nft/${address}`);
+        // Check if it's a Telegram gift (from Fragment)
+        const isGift = currentGiftCollection || card.closest('#page-store');
+        if (isGift) {
+          tg.openLink(`https://fragment.com/gift/${address}`);
+        } else {
+          tg.openLink(`https://getgems.io/nft/${address}`);
+        }
       }
     });
   });
@@ -730,6 +797,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initModals();
   initSearch();
   initSwap();
+  initGiftCollections();
   initTonConnect();
   
   document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);

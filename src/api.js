@@ -151,43 +151,64 @@ export async function getWalletBalance(walletAddress) {
 }
 
 // ==================== TELEGRAM GIFTS ====================
-// Note: Telegram gifts are special NFTs on TON
-// Collection addresses for known gift collections
+// Official Telegram Gift collections from Fragment
 
-const GIFT_COLLECTIONS = [
-  'EQAOQdwdw8kGftJCSFgOErM1mBjYPe4DBPq8-AhF6vr9si5N', // Telegram gifts
+const TELEGRAM_GIFT_COLLECTIONS = [
+  {
+    address: 'EQATuUGdvrjLvTWE5ppVFOVCqU2dlCLUnKTsu0n1JYm9la10',
+    name: 'Scared Cats',
+    image: 'https://nft.fragment.com/collection/scaredcat.webp',
+    emoji: '🐱',
+    color: 'purple'
+  },
+  {
+    address: 'EQBG-g6ahkAUGWpefWbx-D_9sQ8oWbvy6puuq78U2c4NUDFS',
+    name: 'Plush Pepes',
+    image: 'https://nft.fragment.com/collection/plushpepe.webp',
+    emoji: '🐸',
+    color: 'green'
+  }
 ];
 
-export async function getTelegramGifts(limit = 20) {
+export function getTelegramGiftCollections() {
+  return TELEGRAM_GIFT_COLLECTIONS;
+}
+
+export async function getTelegramGifts(collectionAddress, limit = 20) {
   try {
-    // Try to fetch from known gift collection
-    const gifts = [];
+    const response = await fetch(
+      `${TONAPI_BASE}/nfts/collections/${collectionAddress}/items?limit=${limit}`
+    );
+    const data = await response.json();
     
-    for (const collectionAddr of GIFT_COLLECTIONS) {
-      try {
-        const response = await fetch(
-          `${TONAPI_BASE}/nfts/collections/${collectionAddr}/items?limit=${limit}`
-        );
-        const data = await response.json();
-        
-        if (data.nft_items) {
-          gifts.push(...data.nft_items.map((item, index) => ({
-            address: item.address,
-            name: item.metadata?.name || 'Gift',
-            image: getBestImage(item.previews) || item.metadata?.image,
-            color: getCardColor(index)
-          })));
-        }
-      } catch (e) {
-        console.log('Gift collection not found:', collectionAddr);
-      }
-    }
+    const collection = TELEGRAM_GIFT_COLLECTIONS.find(c => c.address === collectionAddress);
     
-    return gifts;
+    return data.nft_items?.map((item, index) => ({
+      address: item.address,
+      index: item.index,
+      name: item.metadata?.name || `${collection?.name || 'Gift'} #${item.index}`,
+      description: item.metadata?.description || '',
+      image: getBestImage(item.previews) || item.metadata?.image,
+      collectionAddress: collectionAddress,
+      collectionName: collection?.name || 'Telegram Gift',
+      color: collection?.color || getCardColor(index),
+      fragmentUrl: `https://fragment.com/gift/${item.address}`
+    })) || [];
   } catch (error) {
-    console.error('Failed to fetch gifts:', error);
+    console.error('Failed to fetch Telegram gifts:', error);
     return [];
   }
+}
+
+export async function getAllTelegramGifts(limitPerCollection = 10) {
+  const allGifts = [];
+  
+  for (const collection of TELEGRAM_GIFT_COLLECTIONS) {
+    const gifts = await getTelegramGifts(collection.address, limitPerCollection);
+    allGifts.push(...gifts);
+  }
+  
+  return allGifts;
 }
 
 // ==================== FEATURED / TRENDING ====================
