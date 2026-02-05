@@ -120,6 +120,9 @@ async function onWalletConnected(wallet) {
   // Load user NFTs
   loadUserNfts();
   
+  // Update swap UI
+  updateSwapForWallet();
+  
   console.log('Wallet connected:', walletAddress);
   haptic('medium');
 }
@@ -526,6 +529,197 @@ function initSearch() {
   });
 }
 
+// ==================== SWAP ====================
+
+let fromToken = { symbol: 'TON', image: 'https://ton.org/download/ton_symbol.png' };
+let toToken = { symbol: 'USDT', image: 'https://cache.tonapi.io/imgproxy/T3PB4s7oprNVaJkwqbGg07DPUrXmzBi-Xzi-q9uJzTo/rs:fill:200:200:1/g:no/aHR0cHM6Ly90ZXRoZXIudG8vaW1hZ2VzL2xvZ29DaXJjbGUucG5n.webp' };
+let selectingToken = 'from'; // 'from' or 'to'
+let tonPrice = 3.5;
+
+async function initSwap() {
+  // Get TON price
+  const rates = await api.getTokenRates(['ton']);
+  tonPrice = rates?.TON?.prices?.USD || 3.5;
+  
+  // Input handler
+  const fromAmount = document.getElementById('from-amount');
+  fromAmount?.addEventListener('input', updateSwapEstimate);
+  
+  // Swap direction
+  document.getElementById('swap-direction')?.addEventListener('click', () => {
+    const temp = fromToken;
+    fromToken = toToken;
+    toToken = temp;
+    updateTokenButtons();
+    updateSwapEstimate();
+    haptic('light');
+  });
+  
+  // Token selectors
+  document.getElementById('from-token-btn')?.addEventListener('click', () => {
+    selectingToken = 'from';
+    openTokenSelector();
+  });
+  
+  document.getElementById('to-token-btn')?.addEventListener('click', () => {
+    selectingToken = 'to';
+    openTokenSelector();
+  });
+  
+  // Swap button
+  document.getElementById('swap-btn')?.addEventListener('click', handleSwap);
+  
+  // DEX links
+  document.getElementById('link-dedust')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (tg) tg.openLink('https://dedust.io/swap');
+  });
+  
+  document.getElementById('link-stonfi')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (tg) tg.openLink('https://app.ston.fi/swap');
+  });
+  
+  // Token modal
+  document.getElementById('token-sheet-close')?.addEventListener('click', closeTokenSelector);
+  document.getElementById('token-modal-overlay')?.addEventListener('click', closeTokenSelector);
+}
+
+function updateTokenButtons() {
+  const fromBtn = document.getElementById('from-token-btn');
+  const toBtn = document.getElementById('to-token-btn');
+  
+  if (fromBtn) {
+    fromBtn.querySelector('.token-icon').src = fromToken.image;
+    fromBtn.querySelector('.token-symbol').textContent = fromToken.symbol;
+  }
+  
+  if (toBtn) {
+    toBtn.querySelector('.token-icon').src = toToken.image;
+    toBtn.querySelector('.token-symbol').textContent = toToken.symbol;
+  }
+}
+
+async function updateSwapEstimate() {
+  const fromAmount = parseFloat(document.getElementById('from-amount').value) || 0;
+  const toAmountInput = document.getElementById('to-amount');
+  const swapInfo = document.getElementById('swap-info');
+  const swapBtn = document.getElementById('swap-btn');
+  
+  if (fromAmount <= 0) {
+    toAmountInput.value = '';
+    swapInfo.style.display = 'none';
+    if (walletAddress) {
+      swapBtn.textContent = 'Enter amount';
+      swapBtn.disabled = true;
+    }
+    return;
+  }
+  
+  // Calculate estimate
+  let toAmount = 0;
+  let rate = '';
+  
+  if (fromToken.symbol === 'TON' && toToken.symbol === 'USDT') {
+    toAmount = fromAmount * tonPrice;
+    rate = `1 TON ≈ $${tonPrice.toFixed(2)}`;
+  } else if (fromToken.symbol === 'USDT' && toToken.symbol === 'TON') {
+    toAmount = fromAmount / tonPrice;
+    rate = `1 USDT ≈ ${(1/tonPrice).toFixed(4)} TON`;
+  } else {
+    // Mock rate for other pairs
+    toAmount = fromAmount * 0.95;
+    rate = `1 ${fromToken.symbol} ≈ 0.95 ${toToken.symbol}`;
+  }
+  
+  toAmountInput.value = toAmount.toFixed(toToken.symbol === 'TON' ? 4 : 2);
+  
+  // Show swap info
+  swapInfo.style.display = 'block';
+  document.getElementById('swap-rate').textContent = rate;
+  
+  // Update button
+  if (walletAddress) {
+    swapBtn.textContent = 'Swap on DeDust';
+    swapBtn.disabled = false;
+  }
+}
+
+function openTokenSelector() {
+  const tokens = api.getPopularTokens();
+  const list = document.getElementById('token-list');
+  
+  list.innerHTML = tokens.map(token => `
+    <li class="token-item" data-symbol="${token.symbol}" data-image="${token.image}">
+      <img src="${token.image}" alt="${token.symbol}" class="token-item-icon" onerror="this.src='https://ton.org/download/ton_symbol.png'">
+      <div class="token-item-info">
+        <div class="token-item-name">${token.name}</div>
+        <div class="token-item-symbol">${token.symbol}</div>
+      </div>
+      <div class="token-item-balance">
+        <div class="token-item-amount">—</div>
+      </div>
+    </li>
+  `).join('');
+  
+  // Add click handlers
+  list.querySelectorAll('.token-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const symbol = item.dataset.symbol;
+      const image = item.dataset.image;
+      
+      if (selectingToken === 'from') {
+        fromToken = { symbol, image };
+      } else {
+        toToken = { symbol, image };
+      }
+      
+      updateTokenButtons();
+      updateSwapEstimate();
+      closeTokenSelector();
+      haptic('selection');
+    });
+  });
+  
+  document.getElementById('token-modal-overlay').classList.add('open');
+  document.getElementById('token-sheet').classList.add('open');
+  haptic('medium');
+}
+
+function closeTokenSelector() {
+  document.getElementById('token-modal-overlay').classList.remove('open');
+  document.getElementById('token-sheet').classList.remove('open');
+  haptic('light');
+}
+
+async function handleSwap() {
+  if (!walletAddress) {
+    handleWalletClick();
+    return;
+  }
+  
+  haptic('medium');
+  
+  // Open DeDust with the swap params
+  const fromAmount = document.getElementById('from-amount').value;
+  if (tg) {
+    // Open DeDust swap page
+    tg.openLink(`https://dedust.io/swap/${fromToken.symbol}/${toToken.symbol}`);
+  }
+}
+
+// Update swap UI when wallet connects
+function updateSwapForWallet() {
+  const swapBtn = document.getElementById('swap-btn');
+  if (walletAddress) {
+    swapBtn.textContent = 'Enter amount';
+    swapBtn.disabled = true;
+  } else {
+    swapBtn.textContent = 'Connect Wallet';
+    swapBtn.disabled = false;
+  }
+}
+
 // ==================== INITIALIZATION ====================
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -535,6 +729,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initSectionTabs();
   initModals();
   initSearch();
+  initSwap();
   initTonConnect();
   
   document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);

@@ -164,12 +164,77 @@
         </div>
       </div>
 
-      <!-- Season Page -->
-      <div id="page-season" class="page">
+      <!-- Swap Page -->
+      <div id="page-swap" class="page">
         <div class="content">
-          <div class="placeholder">
-            <div class="placeholder-icon">⭐</div>
-            <div class="placeholder-text">Season rewards coming soon</div>
+          <div class="swap-container">
+            <h2 class="swap-title">Swap Tokens</h2>
+            
+            <!-- From Token -->
+            <div class="swap-box">
+              <div class="swap-box-header">
+                <span class="swap-label">You pay</span>
+                <span class="swap-balance" id="from-balance">Balance: —</span>
+              </div>
+              <div class="swap-box-content">
+                <input type="number" class="swap-amount" id="from-amount" placeholder="0" inputmode="decimal">
+                <button class="token-selector" id="from-token-btn">
+                  <img src="https://ton.org/download/ton_symbol.png" alt="TON" class="token-icon">
+                  <span class="token-symbol">TON</span>
+                  <span class="chevron">▼</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Swap Direction -->
+            <button class="swap-direction-btn" id="swap-direction">
+              <span>↕️</span>
+            </button>
+
+            <!-- To Token -->
+            <div class="swap-box">
+              <div class="swap-box-header">
+                <span class="swap-label">You receive</span>
+                <span class="swap-balance" id="to-balance">Balance: —</span>
+              </div>
+              <div class="swap-box-content">
+                <input type="number" class="swap-amount" id="to-amount" placeholder="0" readonly>
+                <button class="token-selector" id="to-token-btn">
+                  <img src="https://cache.tonapi.io/imgproxy/T3PB4s7oprNVaJkwqbGg07DPUrXmzBi-Xzi-q9uJzTo/rs:fill:200:200:1/g:no/aHR0cHM6Ly90ZXRoZXIudG8vaW1hZ2VzL2xvZ29DaXJjbGUucG5n.webp" alt="USDT" class="token-icon">
+                  <span class="token-symbol">USDT</span>
+                  <span class="chevron">▼</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Swap Info -->
+            <div class="swap-info" id="swap-info" style="display: none;">
+              <div class="swap-info-row">
+                <span>Rate</span>
+                <span id="swap-rate">1 TON ≈ $3.50</span>
+              </div>
+              <div class="swap-info-row">
+                <span>Price Impact</span>
+                <span id="swap-impact">~0.1%</span>
+              </div>
+              <div class="swap-info-row">
+                <span>Fee</span>
+                <span id="swap-fee">0.3%</span>
+              </div>
+            </div>
+
+            <!-- Swap Button -->
+            <button class="swap-btn" id="swap-btn" disabled>
+              Connect Wallet
+            </button>
+
+            <!-- DEX Links -->
+            <div class="dex-links">
+              <span>Powered by</span>
+              <a href="#" id="link-dedust">DeDust</a>
+              <span>•</span>
+              <a href="#" id="link-stonfi">Ston.fi</a>
+            </div>
           </div>
         </div>
       </div>
@@ -195,15 +260,34 @@
         <span class="nav-icon">🎁</span>
         <span class="nav-label">My gifts</span>
       </button>
-      <button class="nav-item" data-page="season">
-        <span class="nav-icon">⭐</span>
-        <span class="nav-label">Season</span>
+      <button class="nav-item" data-page="swap">
+        <span class="nav-icon">💱</span>
+        <span class="nav-label">Swap</span>
       </button>
       <button class="nav-item" data-page="profile">
         <img src="" alt="" class="nav-avatar" id="nav-avatar">
         <span class="nav-label">Profile</span>
       </button>
     </nav>
+
+    <!-- Token Selector Modal -->
+    <div class="modal-overlay" id="token-modal-overlay"></div>
+    <div class="bottom-sheet" id="token-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h2 class="sheet-title">Select Token</h2>
+        <button class="sheet-close" id="token-sheet-close">✕</button>
+      </div>
+      <div class="sheet-content">
+        <div class="search-input" style="margin-bottom: 16px;">
+          <span class="search-icon">🔍</span>
+          <input type="text" placeholder="Search tokens" id="token-search">
+        </div>
+        <ul class="token-list" id="token-list">
+          <!-- Tokens loaded dynamically -->
+        </ul>
+      </div>
+    </div>
 
     <!-- Collection Filter Modal -->
     <div class="modal-overlay" id="modal-overlay"></div>

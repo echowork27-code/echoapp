@@ -207,3 +207,125 @@ export async function getFeaturedNfts() {
   
   return featured.slice(0, 12);
 }
+
+// ==================== TOKEN SWAP ====================
+
+// Popular tokens on TON
+const POPULAR_TOKENS = [
+  {
+    symbol: 'TON',
+    name: 'Toncoin',
+    address: 'native',
+    decimals: 9,
+    image: 'https://ton.org/download/ton_symbol.png'
+  },
+  {
+    symbol: 'USDT',
+    name: 'Tether USD',
+    address: 'EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs',
+    decimals: 6,
+    image: 'https://cache.tonapi.io/imgproxy/T3PB4s7oprNVaJkwqbGg07DPUrXmzBi-Xzi-q9uJzTo/rs:fill:200:200:1/g:no/aHR0cHM6Ly90ZXRoZXIudG8vaW1hZ2VzL2xvZ29DaXJjbGUucG5n.webp'
+  },
+  {
+    symbol: 'NOT',
+    name: 'Notcoin',
+    address: 'EQAvlWFDxGF2lXm67y4yzC17wYKD9A0guwPkMs1gOsM__NOT',
+    decimals: 9,
+    image: 'https://cache.tonapi.io/imgproxy/4KCMNm34jZLXt0rqeFm4rH-BK4FoK76EVX9r0cCIGDg/rs:fill:200:200:1/g:no/aHR0cHM6Ly9jZG4uam9pbmNvbW11bml0eS54eXovY2xpY2tlci9ub3RfbG9nby5wbmc.webp'
+  },
+  {
+    symbol: 'DOGS',
+    name: 'Dogs',
+    address: 'EQCvxJy4eG8hyHBFsZ7eePxrRsUQSFE_jpptRAYBmcG_DOGS',
+    decimals: 9,
+    image: 'https://cache.tonapi.io/imgproxy/6PVNYcQAaWOPZr3H7sfaVgFNZC9ZfVHlcYIY6ABGA0s/rs:fill:200:200:1/g:no/aHR0cHM6Ly9jZG4uZG9ncy5kZXYvZG9ncy5wbmc.webp'
+  },
+  {
+    symbol: 'CATI',
+    name: 'Catizen',
+    address: 'EQD-cvR0Nz6XAyRBvbhz-abTrRC6sI5tvHvvpeQraV9UAAD7',
+    decimals: 9,
+    image: 'https://cache.tonapi.io/imgproxy/x6C9v3kNHMgWDOtaZBQQWjjQ0o9Wl9ODAjkfrlZqOGQ/rs:fill:200:200:1/g:no/aHR0cHM6Ly9hc3NldHMuY29pbmdlY2tvLmNvbS9jb2lucy9pbWFnZXMvMzk0NjYvbGFyZ2UvY2F0aV9sb2dvLnBuZz8xNzI0NDU2MzE2.webp'
+  },
+  {
+    symbol: 'HMSTR',
+    name: 'Hamster Kombat',
+    address: 'EQAJ8uWd7EBqsmpSWaRdf_I-8R8-XHwh3gsNKhy-UrdrPcUo',
+    decimals: 9,
+    image: 'https://cache.tonapi.io/imgproxy/4v-m_pNcZD2xKc8GB5oaLiHRrSipu6IV-YUPbGjwNyM/rs:fill:200:200:1/g:no/aHR0cHM6Ly9oYW1zdGVya29tYmF0Lmlvcy1hcHBzLnN0b3JlL2ltYWdlcy9jb2luX2hhbXN0ZXJfa29tYmF0LnBuZw.webp'
+  }
+];
+
+export function getPopularTokens() {
+  return POPULAR_TOKENS;
+}
+
+export async function getTokenRates(symbols = ['ton']) {
+  try {
+    const response = await fetch(
+      `${TONAPI_BASE}/rates?tokens=${symbols.join(',')}&currencies=usd`
+    );
+    const data = await response.json();
+    return data.rates || {};
+  } catch (error) {
+    console.error('Failed to fetch rates:', error);
+    return {};
+  }
+}
+
+export async function getSwapEstimate(fromToken, toToken, amount) {
+  // For now, return mock estimate based on rates
+  // In production, this would call DeDust or Ston.fi API
+  try {
+    const rates = await getTokenRates(['ton']);
+    const tonPrice = rates?.TON?.prices?.USD || 3.5;
+    
+    // Simple mock conversion (TON <-> USDT)
+    if (fromToken === 'TON' && toToken === 'USDT') {
+      return {
+        fromAmount: amount,
+        toAmount: (amount * tonPrice).toFixed(2),
+        rate: tonPrice,
+        priceImpact: '0.1%',
+        fee: '0.3%'
+      };
+    } else if (fromToken === 'USDT' && toToken === 'TON') {
+      return {
+        fromAmount: amount,
+        toAmount: (amount / tonPrice).toFixed(4),
+        rate: 1 / tonPrice,
+        priceImpact: '0.1%',
+        fee: '0.3%'
+      };
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Failed to get swap estimate:', error);
+    return null;
+  }
+}
+
+// Get user's token balances
+export async function getUserTokens(walletAddress) {
+  try {
+    const response = await fetch(
+      `${TONAPI_BASE}/accounts/${walletAddress}/jettons?currencies=usd`
+    );
+    const data = await response.json();
+    
+    return data.balances?.map(bal => ({
+      address: bal.jetton?.address,
+      symbol: bal.jetton?.symbol || 'Unknown',
+      name: bal.jetton?.name || 'Unknown Token',
+      balance: bal.balance,
+      decimals: bal.jetton?.decimals || 9,
+      image: bal.jetton?.image,
+      usdValue: bal.price?.prices?.USD ? 
+        (Number(bal.balance) / Math.pow(10, bal.jetton?.decimals || 9)) * bal.price.prices.USD : 0
+    })) || [];
+  } catch (error) {
+    console.error('Failed to fetch user tokens:', error);
+    return [];
+  }
+}
